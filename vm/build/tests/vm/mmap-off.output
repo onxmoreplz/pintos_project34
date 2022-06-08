@@ -14,14 +14,14 @@ Boot complete.
 Putting 'mmap-off' into the file system...
 Putting 'large.txt' into the file system...
 Executing 'mmap-off':
-Kernel PANIC at ../../userprog/process.c:75 in initd(): Fail to launch initd
+Kernel PANIC at ../../userprog/process.c:77 in initd(): Fail to launch initd
 
 Call stack: 0x80042180ad 0x800421b763 0x8004207454.
 The `backtrace' program can make call stacks useful.
 Read "Backtraces" in the "Debugging Tools" chapter
 of the Pintos documentation for more information.
-Timer: 286 ticks
-Thread: 30 idle ticks, 256 kernel ticks, 0 user ticks
+Timer: 244 ticks
+Thread: 30 idle ticks, 214 kernel ticks, 0 user ticks
 hd0:0: 0 reads, 0 writes
 hd0:1: 66 reads, 15904 writes
 hd1:0: 7933 reads, 0 writes
