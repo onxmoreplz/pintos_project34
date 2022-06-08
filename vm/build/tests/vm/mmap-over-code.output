@@ -14,17 +14,16 @@ Boot complete.
 Putting 'mmap-over-code' into the file system...
 Putting 'sample.txt' into the file system...
 Executing 'mmap-over-code':
-Kernel PANIC at ../../userprog/process.c:77 in initd(): Fail to launch initd
-
-Call stack: 0x80042180ad 0x800421b763 0x8004207454.
+Kernel PANIC at ../../vm/vm.c:122 in vm_get_frame(): assertion `frame != NULL' failed.
+Call stack: 0x80042180ad 0x8004220c12 0x8004220d5e 0x8004220cd3 0x800421cbdf 0x8004208f7e 0x800420939c 0x8004220dd5 0x800421b70b 0x8004207454.
 The `backtrace' program can make call stacks useful.
 Read "Backtraces" in the "Debugging Tools" chapter
 of the Pintos documentation for more information.
 Timer: 59 ticks
 Thread: 30 idle ticks, 29 kernel ticks, 0 user ticks
 hd0:0: 0 reads, 0 writes
-hd0:1: 66 reads, 250 writes
+hd0:1: 61 reads, 250 writes
 hd1:0: 106 reads, 0 writes
 hd1:1: 0 reads, 0 writes
-Console: 1223 characters output
+Console: 1323 characters output
 Key

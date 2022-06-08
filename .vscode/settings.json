@@ -11,6 +11,7 @@
         "disk.h": "c",
         "hash.h": "c",
         "vm.h": "c",
-        "inspect.h": "c"
+        "inspect.h": "c",
+        "malloc.h": "c"
     }
 }
