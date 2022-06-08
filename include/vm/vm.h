@@ -41,6 +41,9 @@ struct thread;
  * uninit_page, file_page, anon_page, and page cache (project4).
  * DO NOT REMOVE/MODIFY PREDEFINED MEMBER OF THIS STRUCTURE. */
 struct page {
+	struct hash_elem hash_elem; /* Hash table element. */ // Project 3 추가
+	void *addr; /* Virtual address. */ // Project 3 추가
+
 	const struct page_operations *operations;
 	void *va;              /* Address in terms of user space */
 	struct frame *frame;   /* Back reference for frame */
@@ -85,6 +88,7 @@ struct page_operations {
  * We don't want to force you to obey any specific design for this struct.
  * All designs up to you for this. */
 struct supplemental_page_table {
+	struct hash *hash_page_table;
 };
 
 #include "threads/thread.h"

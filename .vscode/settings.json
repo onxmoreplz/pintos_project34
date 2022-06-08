@@ -6,6 +6,11 @@
         "mmu.h": "c",
         "file.h": "c",
         "syscall.h": "c",
-        "process.h": "c"
+        "process.h": "c",
+        "timer.h": "c",
+        "disk.h": "c",
+        "hash.h": "c",
+        "vm.h": "c",
+        "inspect.h": "c"
     }
 }
