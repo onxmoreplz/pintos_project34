@@ -65,7 +65,7 @@ struct page {
 
 /* The representation of "frame" */
 struct frame {
-	void *kva;
+	void *kva; //Kernel Virtual Address
 	struct page *page;
 };
 

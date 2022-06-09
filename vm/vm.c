@@ -67,6 +67,7 @@ err:
 }
 
 /* Find VA from spt and return page. On error, return NULL. */
+/* GitBook : You are allowed to add more members when you implement a frame management interface */
 struct page *
 spt_find_page (struct supplemental_page_table *spt UNUSED, void *va UNUSED) {
 	struct page *page = NULL;
@@ -76,9 +77,11 @@ spt_find_page (struct supplemental_page_table *spt UNUSED, void *va UNUSED) {
 }
 
 /* Insert PAGE into spt with validation. */
+/**
+ * 
+*/
 bool
-spt_insert_page (struct supplemental_page_table *spt UNUSED,
-		struct page *page UNUSED) {
+spt_insert_page (struct supplemental_page_table *spt UNUSED, struct page *page UNUSED) {
 	int succ = false;
 	/* TODO: Fill this function. */
 
@@ -114,6 +117,17 @@ vm_evict_frame (void) {
  * and return it. This always return valid address. That is, if the user pool
  * memory is full, this function evicts the frame to get the available memory
  * space.*/
+/**
+ * Gitbook
+ * 
+ * Gets a new physical page from the user pool by calling palloc_get_page. 
+ * When successfully got a page from the user pool, also allocates a frame, 
+ * initialize its members, and returns it. After you implement vm_get_frame, 
+ * you have to allocate all user space pages (PALLOC_USER) through this function. 
+ * You don't need to handle swap out for now in case of page allocation failure. 
+ * 
+ * Just mark those case with PANIC ("todo") for now.
+*/
 static struct frame *
 vm_get_frame (void) {
 	struct frame *frame = NULL;

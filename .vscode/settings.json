@@ -12,6 +12,7 @@
         "hash.h": "c",
         "vm.h": "c",
         "inspect.h": "c",
-        "malloc.h": "c"
+        "malloc.h": "c",
+        "intrinsic.h": "c"
     }
 }
