@@ -18,9 +18,13 @@
 #include "threads/mmu.h"
 #include "threads/vaddr.h"
 #include "intrinsic.h"
+#define VM  //project3 virtual m
 #ifdef VM
 #include "vm/vm.h"
 #endif
+
+
+
 
 static void process_cleanup(void);
 static bool load(const char *file_name, struct intr_frame *if_);
@@ -807,10 +811,18 @@ load_segment(struct file *file, off_t ofs, uint8_t *upage,
 		size_t page_read_bytes = read_bytes < PGSIZE ? read_bytes : PGSIZE;
 		size_t page_zero_bytes = PGSIZE - page_read_bytes;
 
+		
+
+		struct file_info *file_info = palloc_get_page(PAL_ZERO | PAL_USER);
+
+		file_info->file = file;
+		file_info->ofs = ofs;
+		file_info->writable = writable;
+
+		
 		/* TODO: Set up aux to pass information to the lazy_load_segment. */
 		void *aux = NULL;
-		if (!vm_alloc_page_with_initializer(VM_ANON, upage,
-											writable, lazy_load_segment, aux))
+		if (!vm_alloc_page_with_initializer(VM_ANON, upage, writable, lazy_load_segment, file_info))
 			return false;
 
 		/* Advance. */

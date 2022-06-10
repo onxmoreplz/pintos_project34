@@ -46,6 +46,7 @@ static struct frame *vm_evict_frame (void);
 /* Create the pending page object with initializer. If you want to create a
  * page, do not create it directly and make it through this function or
  * `vm_alloc_page`. */
+
 bool
 vm_alloc_page_with_initializer (enum vm_type type, void *upage, bool writable,
 		vm_initializer *init, void *aux) {
@@ -56,11 +57,24 @@ vm_alloc_page_with_initializer (enum vm_type type, void *upage, bool writable,
 
 	/* Check wheter the upage is already occupied or not. */
 	if (spt_find_page (spt, upage) == NULL) {
+
+
 		/* TODO: Create the page, fetch the initialier according to the VM type,
 		 * TODO: and then create "uninit" page struct by calling uninit_new. You
 		 * TODO: should modify the field after calling the uninit_new. */
 
+		struct page *new_page;
+		new_page->va = upage;
+
+		
+		uninit_new();
+
+		// uninit_new (page , void *va, vm_initializer *init,
+		// enum vm_type type, void *aux,
+		// bool (*initializer)(struct page *, enum vm_type, void *))
+
 		/* TODO: Insert the page into the spt. */
+		spt_insert_page(spt, new_page);
 	}
 err:
 	return false;
@@ -70,20 +84,29 @@ err:
 /* GitBook : You are allowed to add more members when you implement a frame management interface */
 struct page *
 spt_find_page (struct supplemental_page_table *spt UNUSED, void *va UNUSED) {
-	struct page *page = NULL;
+	// struct page *page;
+	
 	/* TODO: Fill this function. */
+	struct page p; 
+	struct hash_elem *e;
 
-	return page;
+	p.addr = pg_round_down(va);
+	
+	e = hash_find(spt->hash_page_table, &p.hash_elem);
+
+	return e != NULL ? hash_entry(e, struct page, hash_elem) : NULL;
 }
 
 /* Insert PAGE into spt with validation. */
-/**
- * 
-*/
 bool
 spt_insert_page (struct supplemental_page_table *spt UNUSED, struct page *page UNUSED) {
 	int succ = false;
 	/* TODO: Fill this function. */
+	if (spt_find_page(spt, &page->va) == NULL)
+	{
+		hash_insert(spt->hash_page_table, &page->hash_elem);
+		succ = true;
+	}
 
 	return succ;
 }
@@ -130,7 +153,8 @@ vm_evict_frame (void) {
 */
 static struct frame *
 vm_get_frame (void) {
-	struct frame *frame = NULL;
+	struct frame *frame = malloc(sizeof(struct frame)); 
+	frame->kva = palloc_get_page(PAL_USER);
 	/* TODO: Fill this function. */
 
 	ASSERT (frame != NULL);
@@ -187,6 +211,7 @@ vm_do_claim_page (struct page *page) {
 	page->frame = frame;
 
 	/* TODO: Insert page table entry to map page's VA to frame's PA. */
+	spt_insert_page(&thread_current()->spt, page);
 
 	return swap_in (page, frame->kva);
 }
@@ -215,9 +240,10 @@ page_hash (const struct hash_elem *p_, void *aux UNUSED) {
   return hash_bytes (&p->addr, sizeof p->addr);
 }
 
-bool
-page_less (const struct hash_elem *a_,
-           const struct hash_elem *b_, void *aux UNUSED) {
+/**
+ * page_less : Returns true if page a precedes page b.
+*/
+bool page_less (const struct hash_elem *a_, const struct hash_elem *b_, void *aux UNUSED) {
   const struct page *a = hash_entry (a_, struct page, hash_elem);
   const struct page *b = hash_entry (b_, struct page, hash_elem);
 
