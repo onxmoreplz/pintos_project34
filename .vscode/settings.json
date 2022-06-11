@@ -13,6 +13,7 @@
         "vm.h": "c",
         "inspect.h": "c",
         "malloc.h": "c",
-        "intrinsic.h": "c"
+        "intrinsic.h": "c",
+        "palloc.h": "c"
     }
 }

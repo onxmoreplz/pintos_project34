@@ -21,9 +21,7 @@ static void rehash (struct hash *);
 
 /* Initializes hash table H to compute hash values using HASH and
    compare hash elements using LESS, given auxiliary data AUX. */
-bool
-hash_init (struct hash *h,
-		hash_hash_func *hash, hash_less_func *less, void *aux) {
+bool hash_init (struct hash *h, hash_hash_func *hash, hash_less_func *less, void *aux) {
 	h->elem_cnt = 0;
 	h->bucket_cnt = 4;
 	h->buckets = malloc (sizeof *h->buckets * h->bucket_cnt);
@@ -89,7 +87,7 @@ hash_destroy (struct hash *h, hash_action_func *destructor) {
    If an equal element is already in the table, returns it
    without inserting NEW. */
 struct hash_elem *
-hash_insert (struct hash *h, struct hash_elem *new) {
+ hash_insert (struct hash *h, struct hash_elem *new) {
 	struct list *bucket = find_bucket (h, new);
 	struct hash_elem *old = find_elem (h, bucket, new);
 

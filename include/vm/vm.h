@@ -42,12 +42,18 @@ struct thread;
  * uninit_page, file_page, anon_page, and page cache (project4).
  * DO NOT REMOVE/MODIFY PREDEFINED MEMBER OF THIS STRUCTURE. */
 struct page {
-	struct hash_elem hash_elem; /* Hash table element. */ // Project 3 추가
-	void *addr; /* Virtual address. */ // Project 3 추가
+	struct hash_elem hash_elem; // 해당 페이지가 속해 있는 해시 테이블에 연결시켜주는 해시 테이블 요소 // Project 3 추가
+	// void *addr; /* Virtual address. */ // Project 3 추가
 
 	const struct page_operations *operations;
 	void *va;              /* Address in terms of user space */
+							//struct page 자체가 페이지는 아니다. 
+							// 다만, 유저 가상 메모리에 우리가 만들어준 페이지를 관리해주기 위해 프로세스의 커널 주소 영역에 선언해준 구조체이다. 
+							// 유저 가상 메모리 내 페이지의 실제 주소는 page->va에 있다. 
 	struct frame *frame;   /* Back reference for frame */
+							// 할당된 물리 메모리 프레임 주소
+	bool writable;
+	int page_cnt;
 
 	/* Your implementation */
 
@@ -65,8 +71,9 @@ struct page {
 
 /* The representation of "frame" */
 struct frame {
-	void *kva; //Kernel Virtual Address
+	void *kva; // 프레임 구조체에 대응하는 물리 메모리는 프로세스의 커널 가상 주소에 매핑된다. 그 매핑된 커널 가상 주소를 의미한다.
 	struct page *page;
+	struct list_elem f_elem;
 };
 
 /* The function table for page operations.

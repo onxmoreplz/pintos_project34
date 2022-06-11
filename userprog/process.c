@@ -18,7 +18,7 @@
 #include "threads/mmu.h"
 #include "threads/vaddr.h"
 #include "intrinsic.h"
-#define VM  //project3 virtual m
+// #define VM  //project3 virtual 
 #ifdef VM
 #include "vm/vm.h"
 #endif
@@ -759,7 +759,7 @@ setup_stack(struct intr_frame *if_)
  * with palloc_get_page().
  * Returns true on success, false if UPAGE is already mapped or
  * if memory allocation fails. */
-static bool
+bool
 install_page(void *upage, void *kpage, bool writable)
 {
 	struct thread *t = thread_current();
@@ -769,6 +769,16 @@ install_page(void *upage, void *kpage, bool writable)
 	return (pml4_get_page(t->pml4, upage) == NULL && pml4_set_page(t->pml4, upage, kpage, writable));
 }
 #else
+
+bool
+install_page(void *upage, void *kpage, bool writable)
+{
+	struct thread *t = thread_current();
+
+	/* Verify that there's not already a page at that virtual
+	 * address, then map our page there. */
+	return (pml4_get_page(t->pml4, upage) == NULL && pml4_set_page(t->pml4, upage, kpage, writable));
+}
 /* From here, codes will be used after project 3.
  * If you want to implement the function for only project 2, implement it on the
  * upper block. */
@@ -779,6 +789,23 @@ lazy_load_segment(struct page *page, void *aux)
 	/* TODO: Load the segment from the file */
 	/* TODO: This called when the first page fault occurs on address VA. */
 	/* TODO: VA is available when calling this function. */
+
+	struct file *file = ((struct file_info*)aux)->file;
+	off_t offsetof = ((struct file_info*)aux)->ofs;
+	size_t page_read_bytes = ((struct file_info*)aux)->page_read_bytes;
+	size_t page_zero_bytes = PGSIZE - page_read_bytes;
+
+	file_seek(file, offsetof);
+
+	if(file_read(file, page->frame->kva, page_read_bytes) != (int)page_read_bytes) {
+		palloc_free_page(page->frame->kva);
+		return false;
+	}
+
+	memset(page->frame->kva + page_read_bytes, 0, page_zero_bytes);
+
+	return true;
+
 }
 
 /* Loads a segment starting at offset OFS in FILE at address
@@ -795,9 +822,9 @@ lazy_load_segment(struct page *page, void *aux)
  *
  * Return true if successful, false if a memory allocation error
  * or disk read error occurs. */
-static bool
-load_segment(struct file *file, off_t ofs, uint8_t *upage,
-			 uint32_t read_bytes, uint32_t zero_bytes, bool writable)
+/* File을 Page 단위로 끊어서 UNINIT 페이지에 해당 파일의 정보를 저장 
+	-> 가상 User 공간에 만들어 준다.*/
+static bool load_segment(struct file *file, off_t ofs, uint8_t *upage, uint32_t read_bytes, uint32_t zero_bytes, bool writable)
 {
 	ASSERT((read_bytes + zero_bytes) % PGSIZE == 0);
 	ASSERT(pg_ofs(upage) == 0);
@@ -811,17 +838,15 @@ load_segment(struct file *file, off_t ofs, uint8_t *upage,
 		size_t page_read_bytes = read_bytes < PGSIZE ? read_bytes : PGSIZE;
 		size_t page_zero_bytes = PGSIZE - page_read_bytes;
 
-		
-
-		struct file_info *file_info = palloc_get_page(PAL_ZERO | PAL_USER);
-
-		file_info->file = file;
-		file_info->ofs = ofs;
-		file_info->writable = writable;
-
-		
+	
 		/* TODO: Set up aux to pass information to the lazy_load_segment. */
 		void *aux = NULL;
+		struct file_info *file_info = (struct file_info *)malloc(sizeof(struct file_info));
+		file_info->file = file;
+		file_info->ofs = ofs;
+		file_info->page_read_bytes = page_read_bytes;
+		file_info->writable = writable;
+
 		if (!vm_alloc_page_with_initializer(VM_ANON, upage, writable, lazy_load_segment, file_info))
 			return false;
 
@@ -829,11 +854,15 @@ load_segment(struct file *file, off_t ofs, uint8_t *upage,
 		read_bytes -= page_read_bytes;
 		zero_bytes -= page_zero_bytes;
 		upage += PGSIZE;
+		ofs += page_read_bytes;
+
+		// free(file_info); // free
 	}
 	return true;
 }
 
 /* Create a PAGE of stack at the USER_STACK. Return true on success. */
+/* Stack에 물리메모리 할당 */
 static bool
 setup_stack(struct intr_frame *if_)
 {
@@ -844,6 +873,15 @@ setup_stack(struct intr_frame *if_)
 	 * TODO: If success, set the rsp accordingly.
 	 * TODO: You should mark the page is stack. */
 	/* TODO: Your code goes here */
+
+	if (vm_alloc_page(VM_ANON | VM_MARKER_0, stack_bottom, 1)){
+		success = vm_claim_page(stack_bottom);
+
+		if (success){
+			if_->rsp = USER_STACK;
+			thread_current()->stack_bottom = stack_bottom;
+		}
+	}
 
 	return success;
 }
