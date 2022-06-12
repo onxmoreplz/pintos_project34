@@ -18,7 +18,7 @@ struct file_info {
 	struct file *file;
 	off_t ofs;
 	size_t page_read_bytes; // 읽어올 파일의 데이터 크기(load_segment()에서 1 PAGE보다 작거나 같다)
-	bool writable;
+	// bool writable;
 };
 
 #endif /* userprog/process.h */

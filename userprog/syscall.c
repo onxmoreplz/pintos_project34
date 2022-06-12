@@ -115,7 +115,7 @@ void syscall_handler(struct intr_frame *f UNUSED)
 		f->R.rax = read(f->R.rdi, f->R.rsi, f->R.rdx);
 		break;
 	case SYS_WRITE:
-		check_valid_buffer(f->R.rsi, f->R.rdx, f->rsp, 0);
+		check_valid_buffer(f->R.rsi, f->R.rdx, f->rsp, 1);
 		f->R.rax = write(f->R.rdi, f->R.rsi, f->R.rdx);
 		break;
 	case SYS_SEEK:
@@ -138,8 +138,7 @@ void syscall_handler(struct intr_frame *f UNUSED)
 struct page* check_address(void *user_addr)
 {
 	// struct thread *curr = thread_current();
-	if (user_addr = NULL || !(is_user_vaddr(user_addr)))
-	{
+	if (is_kernel_vaddr(user_addr)) {
 		exit(-1);
 	}
 	return spt_find_page(&thread_current()->spt, user_addr);

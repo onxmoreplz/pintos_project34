@@ -54,8 +54,10 @@ static bool uninit_initialize (struct page *page, void *kva) {
 	void *aux = uninit->aux;
 
 	/* TODO: You may need to fix this function. */
-	return uninit->page_initializer (page, uninit->type, kva) &&
-		(init ? init (page, aux) : true);
+	// printf("uninit_initial~~\n");
+	
+	// ---> 여기까지 실행, lazy_load_segment가 init인거 같은데 lazy_load_segment로 안 넘어감
+	return uninit->page_initializer (page, uninit->type, kva) && (init ? init (page, aux) : true);
 }
 
 /* Free the resources hold by uninit_page. Although most of pages are transmuted

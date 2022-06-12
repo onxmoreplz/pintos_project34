@@ -2,7 +2,9 @@
 #define VM_VM_H
 #include <stdbool.h>
 #include "threads/palloc.h"
-#include "hash.h"
+
+#include <hash.h>
+#include "threads/vaddr.h"
 
 enum vm_type {
 	/* page not initialized */
@@ -42,18 +44,15 @@ struct thread;
  * uninit_page, file_page, anon_page, and page cache (project4).
  * DO NOT REMOVE/MODIFY PREDEFINED MEMBER OF THIS STRUCTURE. */
 struct page {
-	struct hash_elem hash_elem; // 해당 페이지가 속해 있는 해시 테이블에 연결시켜주는 해시 테이블 요소 // Project 3 추가
-	// void *addr; /* Virtual address. */ // Project 3 추가
-
 	const struct page_operations *operations;
 	void *va;              /* Address in terms of user space */
-							//struct page 자체가 페이지는 아니다. 
-							// 다만, 유저 가상 메모리에 우리가 만들어준 페이지를 관리해주기 위해 프로세스의 커널 주소 영역에 선언해준 구조체이다. 
-							// 유저 가상 메모리 내 페이지의 실제 주소는 page->va에 있다. 
 	struct frame *frame;   /* Back reference for frame */
-							// 할당된 물리 메모리 프레임 주소
+
+	struct hash_elem hash_elem; // 해당 페이지가 속해 있는 해시 테이블에 연결시켜주는 해시 테이블 요소 
 	bool writable;
-	int page_cnt;
+	uint8_t type;
+	bool is_loaded;
+	// int page_cnt;
 
 	/* Your implementation */
 
@@ -76,6 +75,8 @@ struct frame {
 	struct list_elem f_elem;
 };
 
+struct list frame_table;
+
 /* The function table for page operations.
  * This is one way of implementing "interface" in C.
  * Put the table of "method" into the struct's member, and
@@ -96,7 +97,7 @@ struct page_operations {
  * We don't want to force you to obey any specific design for this struct.
  * All designs up to you for this. */
 struct supplemental_page_table {
-	struct hash *hash_page_table;
+	struct hash hash_page_table;
 };
 
 #include "threads/thread.h"
@@ -120,5 +121,10 @@ bool vm_alloc_page_with_initializer (enum vm_type type, void *upage,
 void vm_dealloc_page (struct page *page);
 bool vm_claim_page (void *va);
 enum vm_type page_get_type (struct page *page);
+
+unsigned page_hash(const struct hash_elem *p_, void *aux UNUSED);
+bool page_less(const struct hash_elem *a_, const struct hash_elem *b_, void *aux UNUSED);
+bool insert_page(struct hash *pages, struct page *p);
+bool delete_page(struct hash *pages, struct page *p);
 
 #endif  /* VM_VM_H */
