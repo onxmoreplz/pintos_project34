@@ -18,6 +18,7 @@
 #include "threads/mmu.h"
 #include "threads/vaddr.h"
 #include "intrinsic.h"
+#include "userprog/syscall.h"
 #ifdef VM
 #include "vm/vm.h"
 #endif
@@ -241,6 +242,8 @@ process_exec (void *f_name) {
 
 	/* We first kill the current context */
 	process_cleanup ();
+
+	supplemental_page_table_init(&thread_current()->spt);
 
 	/* And then load the binary */
 	success = load (file_name, &_if);
@@ -682,7 +685,7 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
 }
 
 /* Create a minimal stack by mapping a zeroed page at the USER_STACK */
-static bool
+static bool 
 setup_stack (struct intr_frame *if_) {
 	uint8_t *kpage;
 	bool success = false;
@@ -726,8 +729,7 @@ bool install_page (void *upage, void *kpage, bool writable) {
 
 	/* Verify that there's not already a page at that virtual
 	 * address, then map our page there. */
-	return (pml4_get_page (t->pml4, upage) == NULL
-			&& pml4_set_page (t->pml4, upage, kpage, writable));
+	return (pml4_get_page (t->pml4, upage) == NULL && pml4_set_page (t->pml4, upage, kpage, writable));
 }
 
 
@@ -738,12 +740,12 @@ lazy_load_segment (struct page *page, void *aux) {
 	/* TODO: VA is available when calling this function. */
 	
 	/* --------------- Project 3 ---------------- */
-	struct file *file = ((struct file_info *)aux)->file;
-	off_t ofs = ((struct file_info *)aux)->ofs;
-	size_t page_read_bytes = ((struct file_info *)aux)->page_read_bytes;
+	struct file *file = ((struct container *)aux)->file;
+	off_t offsetof = ((struct container *)aux)->offset;
+	size_t page_read_bytes = ((struct container *)aux)->page_read_bytes;
 	size_t page_zero_bytes = PGSIZE - page_read_bytes;
 
-	file_seek(file, ofs);
+	file_seek(file, offsetof);
 
 	if (file_read(file, page->frame->kva, page_read_bytes) != (int)page_read_bytes) {
 		palloc_free_page(page->frame->kva);
@@ -777,6 +779,7 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
 	ASSERT (pg_ofs (upage) == 0);
 	ASSERT (ofs % PGSIZE == 0);
 
+	/* upage부터 UNINIT 타입의 Page를 1개씩 만들어 SPT에 넣는다(vm_alloc_page_with_initializer) */
 	while (read_bytes > 0 || zero_bytes > 0) {
 		/* Do calculate how to fill this page.
 		 * We will read PAGE_READ_BYTES bytes from FILE
@@ -787,13 +790,12 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
 		/* --------------- Project 3 ---------------- */
 		/* TODO: Set up aux to pass information to the lazy_load_segment. */
 		// void *aux = NULL;
-		struct file_info *file_info = (struct file_info *)malloc(sizeof(struct file_info));
-		file_info->file = file;
-		file_info->page_read_bytes = page_read_bytes;
-		file_info->ofs = ofs;
+		struct container *container = (struct container *)malloc(sizeof(struct container));
+		container->file = file;
+		container->page_read_bytes = page_read_bytes;
+		container->offset = ofs;
 
-		if (!vm_alloc_page_with_initializer (VM_ANON, upage,
-					writable, lazy_load_segment, file_info)) {
+		if (!vm_alloc_page_with_initializer (VM_ANON, upage, writable, lazy_load_segment, container)) {
 			return false;
 		}
 
@@ -808,8 +810,7 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
 }
 
 /* Create a PAGE of stack at the USER_STACK. Return true on success. */
-static bool
-setup_stack (struct intr_frame *if_) {
+static bool setup_stack (struct intr_frame *if_) {
 	bool success = false;
 	void *stack_bottom = (void *) (((uint8_t *) USER_STACK) - PGSIZE);
 
@@ -819,7 +820,7 @@ setup_stack (struct intr_frame *if_) {
 	/* TODO: Your code goes here */
 
 	/* --------------- Project 3 ---------------- */
-	if (vm_alloc_page(VM_ANON | VM_MARKER_0, stack_bottom, 1)) {
+	if (vm_alloc_page(VM_ANON | VM_MARKER_0, stack_bottom, 1)) { // VM_MARKER_0 : 이 페이지가 STACK에 있다는 것을 표시, writeable : 1
 		success = vm_claim_page(stack_bottom);
 
 		if (success) {
@@ -827,6 +828,14 @@ setup_stack (struct intr_frame *if_) {
 			thread_current()->stack_bottom = stack_bottom;
 		}
 	}
+	/*   구현 후 스택의 모습
+	   ------------------------- <---- USER_STACK == if_->rsp
+	   |                       | 
+	   |       NEW PAGE        |
+	   |                       |
+	   |                       |
+	   ------------------------- <---- stack_bottom
+*/
 	/* ------------------------------------------ */
 	return success;
 }

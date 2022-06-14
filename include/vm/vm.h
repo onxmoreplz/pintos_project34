@@ -3,8 +3,10 @@
 #include <stdbool.h>
 #include "threads/palloc.h"
 
-#include <hash.h>
+/* --------------- Project 3 --------------- */
+#include <hash.h> 
 #include "threads/vaddr.h"
+/* ----------------------------------------- */	
 
 enum vm_type {
 	/* page not initialized */
@@ -48,13 +50,15 @@ struct page {
 	void *va;              /* Address in terms of user space */
 	struct frame *frame;   /* Back reference for frame */
 
-	struct hash_elem hash_elem; // 해당 페이지가 속해 있는 해시 테이블에 연결시켜주는 해시 테이블 요소 
-	bool writable;
+	/* Your implementation */
+
+	/* --------------- Project 3 --------------- */
 	uint8_t type;
 	bool is_loaded;
-	// int page_cnt;
-
-	/* Your implementation */
+	struct hash_elem hash_elem;			/* 해당 Page가 속해있는 해시 테이블(SPT)에 연결해주는 요소 */
+	bool writable; 						/* 'vm_try_handler' needs to find out if the page is writable or read-only */
+	// int page_cnt; 						/* only for file-mapped pages */
+	/* ----------------------------------------- */
 
 	/* Per-type data are binded into the union.
 	 * Each function automatically detects the current union */
@@ -70,12 +74,18 @@ struct page {
 
 /* The representation of "frame" */
 struct frame {
-	void *kva; // 프레임 구조체에 대응하는 물리 메모리는 프로세스의 커널 가상 주소에 매핑된다. 그 매핑된 커널 가상 주소를 의미한다.
+	void *kva;
 	struct page *page;
-	struct list_elem f_elem;
+	/* --------------- Project 3 --------------- */
+	struct list_elem frame_elem; 		// frame table list element
+	/* ----------------------------------------- */
 };
 
+/* --------------- Project 3 --------------- */
 struct list frame_table;
+// struct list_elem *start;
+/* ----------------------------------------- */
+
 
 /* The function table for page operations.
  * This is one way of implementing "interface" in C.
@@ -97,7 +107,9 @@ struct page_operations {
  * We don't want to force you to obey any specific design for this struct.
  * All designs up to you for this. */
 struct supplemental_page_table {
-	struct hash hash_page_table;
+	/* --------------- Project 3 --------------- */
+	struct hash spt_hash;
+	/* ----------------------------------------- */
 };
 
 #include "threads/thread.h"
@@ -122,9 +134,11 @@ void vm_dealloc_page (struct page *page);
 bool vm_claim_page (void *va);
 enum vm_type page_get_type (struct page *page);
 
+/* --------------- Project 3 --------------- */
 unsigned page_hash(const struct hash_elem *p_, void *aux UNUSED);
 bool page_less(const struct hash_elem *a_, const struct hash_elem *b_, void *aux UNUSED);
 bool insert_page(struct hash *pages, struct page *p);
 bool delete_page(struct hash *pages, struct page *p);
+/* ----------------------------------------- */
 
 #endif  /* VM_VM_H */

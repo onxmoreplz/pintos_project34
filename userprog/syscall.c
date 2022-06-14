@@ -135,14 +135,6 @@ void syscall_handler(struct intr_frame *f UNUSED)
 }
 
 /* ---------- Project 2 ---------- */
-struct page* check_address(void *user_addr)
-{
-	// struct thread *curr = thread_current();
-	if (is_kernel_vaddr(user_addr)) {
-		exit(-1);
-	}
-	return spt_find_page(&thread_current()->spt, user_addr);
-}
 
 /* Check validity of given file descriptor in current thread fd_table */
 static struct file *
@@ -405,6 +397,18 @@ void close(int fd)
 	file_close(file_obj);
 }
 
+/* 인자로 받은 user_addr이 유저 가상 주소인지 확인하고, 유저 가상 주소라면 user_addr를 포함하는 Page를 SPT에서 찾는다.*/
+struct page* check_address(void *user_addr)
+{
+	// struct thread *curr = thread_current();
+	if (is_kernel_vaddr(user_addr)) {
+		exit(-1);
+	}
+	return spt_find_page(&thread_current()->spt, user_addr);
+}
+
+/* read(), write() 의 경우, 파일이름을 받는 대신 buffer의 주소를 받는다. */
+/* 만약 해당 주소가 포함된 페이지가 SPT에 없거나, Write 시스템 콜에서 이 페이지가 쓰기가 허용된 페이지가 아니라면 프로세스 종료 */
 void check_valid_buffer(void *buffer, unsigned size, void *rsp, bool to_write) {
 	for (int i = 0; i < size; i++) {
 		struct page *page = check_address(buffer + i);
