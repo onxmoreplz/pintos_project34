@@ -203,6 +203,10 @@ vm_get_frame (void) {
 /* Growing the stack. */
 static void
 vm_stack_growth (void *addr UNUSED) {
+	if (vm_alloc_page(VM_ANON | VM_MARKER_0, addr, 1)) { // VM_MARKER_0 : 이 페이지가 STACK에 있다는 것을 표시, writeable : 1
+		vm_claim_page(addr);
+		thread_current()->stack_bottom -= PGSIZE;
+	}
 }
 
 /* Handle the fault on write_protected page */
@@ -225,10 +229,10 @@ vm_try_handle_fault (struct intr_frame *f UNUSED, void *addr UNUSED, bool user U
 	void *rsp_stack = is_kernel_vaddr(f->rsp) ? thread_current()->rsp_stack : f->rsp;
 	if (not_present) {
 		if (!vm_claim_page(addr)) {
-			// if (rsp_stack - 8 <= addr && USER_STACK - 0x100000 == addr && addr <= USER_STACK) {
-			// 	vm_stack_growth(thread_current()->stack_bottom - PGSIZE);
-			// 	return true;
-			// }
+			if (rsp_stack - 8 <= addr && USER_STACK - 0x100000 <= addr && addr <= USER_STACK) {
+				vm_stack_growth(thread_current()->stack_bottom - PGSIZE);
+				return true;
+			}
 			return false;
 			PANIC("to do!");
 		}
