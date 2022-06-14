@@ -17,8 +17,8 @@ Executing 'pt-big-stk-obj':
 Page fault at 0x4746fe78: not present error writing page in user context.
 pt-big-stk-obj: exit(-1)
 Execution of 'pt-big-stk-obj' complete.
-Timer: 68 ticks
-Thread: 30 idle ticks, 33 kernel ticks, 5 user ticks
+Timer: 61 ticks
+Thread: 30 idle ticks, 28 kernel ticks, 3 user ticks
 hd0:0: 0 reads, 0 writes
 hd0:1: 85 reads, 254 writes
 hd1:0: 113 reads, 0 writes

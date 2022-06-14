@@ -18,19 +18,35 @@ Executing 'page-merge-par':
 (page-merge-par) init
 (page-merge-par) sort chunk 0
 (page-merge-par) sort chunk 1
-Page fault at 0x18: not present error writing page in kernel context.
-child-sort: exit(-1)
 (page-merge-par) sort chunk 2
-(page-merge-par) open "buf2": FAILED
+(page-merge-par) sort chunk 3
+child-sort: exit(123)
+(page-merge-par) sort chunk 4
+(child-sort) open "buf3": FAILED
+child-sort: exit(1)
+child-sort: exit(123)
+(page-merge-par) sort chunk 5
+child-sort: exit(123)
+(page-merge-par) sort chunk 6
+(page-merge-par) sort chunk 7
+child-sort: exit(123)
+child-sort: exit(123)
+(page-merge-par) wait for child 0
+(page-merge-par) wait for child 1
+child-sort: exit(123)
+(page-merge-par) wait for child 2
+child-sort: exit(123)
+(page-merge-par) wait for child 3
+(page-merge-par) wait for child 3: FAILED
 page-merge-par: exit(1)
 Execution of 'page-merge-par' complete.
-Timer: 559 ticks
-Thread: 30 idle ticks, 39 kernel ticks, 490 user ticks
+Timer: 4196 ticks
+Thread: 30 idle ticks, 44 kernel ticks, 4122 user ticks
 hd0:0: 0 reads, 0 writes
-hd0:1: 464 reads, 1794 writes
+hd0:1: 3293 reads, 6458 writes
 hd1:0: 218 reads, 0 writes
 hd1:1: 0 reads, 0 writes
-Console: 1273 characters output
+Console: 1683 characters output
 Keyboard: 0 keys pressed
-Exception: 1 page faults
+Exception: 0 page faults
 Powering off...
