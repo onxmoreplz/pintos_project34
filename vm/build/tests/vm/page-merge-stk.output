@@ -17,32 +17,40 @@ Executing 'page-merge-stk':
 (page-merge-stk) begin
 (page-merge-stk) init
 (page-merge-stk) sort chunk 0
+Page fault at 0x4745ff8c: not present error writing page in user context.
 child-qsort: exit(-1)
 (page-merge-stk) sort chunk 1
-child-qsort: exit(-1)
 (page-merge-stk) sort chunk 2
+Page fault at 0x4745ff8c: not present error writing page in user context.
+child-qsort: exit(-1)
+Page fault at 0x4745ff8c: not present error writing page in user context.
 child-qsort: exit(-1)
 (page-merge-stk) sort chunk 3
-child-qsort: exit(-1)
 (page-merge-stk) sort chunk 4
+Page fault at 0x4745ff8c: not present error writing page in user context.
+child-qsort: exit(-1)
+Page fault at 0x4745ff8c: not present error writing page in user context.
 child-qsort: exit(-1)
 (page-merge-stk) sort chunk 5
+Page fault at 0x4745ff8c: not present error writing page in user context.
 child-qsort: exit(-1)
 (page-merge-stk) sort chunk 6
+Page fault at 0x4745ff8c: not present error writing page in user context.
 child-qsort: exit(-1)
 (page-merge-stk) sort chunk 7
+Page fault at 0x4745ff8c: not present error writing page in user context.
 child-qsort: exit(-1)
 (page-merge-stk) wait for child 0
 (page-merge-stk) wait for child 0: FAILED
 page-merge-stk: exit(1)
 Execution of 'page-merge-stk' complete.
-Timer: 4418 ticks
-Thread: 31 idle ticks, 35 kernel ticks, 4352 user ticks
+Timer: 1107 ticks
+Thread: 30 idle ticks, 46 kernel ticks, 1031 user ticks
 hd0:0: 0 reads, 0 writes
-hd0:1: 391 reads, 4678 writes
+hd0:1: 583 reads, 4678 writes
 hd1:0: 224 reads, 0 writes
 hd1:1: 0 reads, 0 writes
-Console: 1551 characters output
+Console: 2143 characters output
 Keyboard: 0 keys pressed
-Exception: 0 page faults
+Exception: 8 page faults
 Powering off...

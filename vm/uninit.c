@@ -46,6 +46,7 @@ void uninit_new (
 }
 
 /* Initalize the page on first fault */
+/* UNINIT 타입일 때의 swap_in 함수 */
 static bool uninit_initialize (struct page *page, void *kva) {
 	struct uninit_page *uninit = &page->uninit;
 
@@ -54,9 +55,8 @@ static bool uninit_initialize (struct page *page, void *kva) {
 	void *aux = uninit->aux;
 
 	/* TODO: You may need to fix this function. */
-	// printf("uninit_initial~~\n");
-	
-	// ---> 여기까지 실행, lazy_load_segment가 init인거 같은데 lazy_load_segment로 안 넘어감
+	/* 해당 페이지에 타입을 인자로 받은 타입으로 변환. */
+	/* 만약, 해당 Page의 Segment가 Load 되지 않은 상태면 lazy load 해준다.(init 이 lazy_load_segment일 때) */
 	return uninit->page_initializer (page, uninit->type, kva) && (init ? init (page, aux) : true);
 }
 
@@ -66,6 +66,14 @@ static bool uninit_initialize (struct page *page, void *kva) {
  * PAGE will be freed by the caller. */
 static void uninit_destroy (struct page *page) {
 	struct uninit_page *uninit UNUSED = &page->uninit;
+	
+	struct container *container;
+	if(VM_TYPE(uninit->type) == VM_ANON){
+		container = (struct container*)uninit->aux;
+		free(container);
+	}
+
 	/* TODO: Fill this function.
 	 * TODO: If you don't have anything to do, just return. */
+
 }

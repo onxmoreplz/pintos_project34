@@ -17,8 +17,8 @@ Executing 'pt-grow-stk-sc':
 Page fault at 0x4746ff78: not present error writing page in user context.
 pt-grow-stk-sc: exit(-1)
 Execution of 'pt-grow-stk-sc' complete.
-Timer: 61 ticks
-Thread: 30 idle ticks, 29 kernel ticks, 2 user ticks
+Timer: 63 ticks
+Thread: 30 idle ticks, 30 kernel ticks, 4 user ticks
 hd0:0: 0 reads, 0 writes
 hd0:1: 83 reads, 242 writes
 hd1:0: 107 reads, 0 writes

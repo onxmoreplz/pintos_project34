@@ -37,8 +37,8 @@ vm_anon_init (void) {
 /* ------------------------------------------ */
 
 /* Initialize the file mapping */
-bool
-anon_initializer (struct page *page, enum vm_type type, void *kva) {
+/* Anonymous Page의 경우, 물리 메모리에서 받아와 초기화할 때 모든 데이터를 0으로 초기화 */
+bool anon_initializer (struct page *page, enum vm_type type, void *kva) {
 	/* Set up the handler */
 	page->operations = &anon_ops;
 
