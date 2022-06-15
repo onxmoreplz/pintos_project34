@@ -19,24 +19,13 @@ Executing 'syn-read':
 (syn-read) open "data"
 (syn-read) write "data"
 (syn-read) close "data"
-child-syn-read: exit(0)
 (syn-read) exec child 1 of 10: "child-syn-read 0"
-child-syn-read: exit(1)
+child-syn-read: exit(0)
+Page fault at 0x18: not present error writing page in kernel context.
+child-syn-read: exit(-1)
 (syn-read) exec child 2 of 10: "child-syn-read 1"
 (syn-read) exec child 3 of 10: "child-syn-read 2"
-child-syn-read: exit(2)
 (syn-read) exec child 4 of 10: "child-syn-read 3"
-child-syn-read: exit(4)
-(syn-read) exec child 5 of 10: "child-syn-read 4"
-(syn-read) exec child 6 of 10: "child-syn-read 5"
-(syn-read) exec child 7 of 10: "child-syn-read 6"
-Page fault at 0x18: not present error writing page in kernel context.
-child-syn-read: exit(-1)
-Page fault at 0x18: not present error writing page in kernel context.
-child-syn-read: exit(-1)
-child-syn-read: exit(3)
-(syn-read) exec child 8 of 10: "child-syn-read 7"
-(syn-read) exec child 9 of 10: "child-syn-read 8"
 Page fault at 0x18: not present error writing page in kernel context.
 child-syn-read: exit(-1)
 Page fault at 0x18: not present error writing page in kernel context.
@@ -44,13 +33,13 @@ child-syn-read: exit(-1)
 Page fault at 0x18: not present error writing page in kernel context.
 syn-read: exit(-1)
 Execution of 'syn-read' complete.
-Timer: 371 ticks
-Thread: 30 idle ticks, 33 kernel ticks, 308 user ticks
+Timer: 166 ticks
+Thread: 30 idle ticks, 34 kernel ticks, 102 user ticks
 hd0:0: 0 reads, 0 writes
-hd0:1: 6874 reads, 504 writes
+hd0:1: 2212 reads, 504 writes
 hd1:0: 225 reads, 0 writes
 hd1:1: 0 reads, 0 writes
-Console: 2115 characters output
+Console: 1674 characters output
 Keyboard: 0 keys pressed
-Exception: 5 page faults
+Exception: 4 page faults
 Powering off...

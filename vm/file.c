@@ -3,6 +3,7 @@
 #include "vm/vm.h"
 #include "../include/userprog/process.h"
 #include "../include/lib/round.h"
+#include "../include/threads/mmu.h"
 
 static bool file_backed_swap_in (struct page *page, void *kva);
 static bool file_backed_swap_out (struct page *page);
@@ -52,10 +53,13 @@ file_backed_destroy (struct page *page) {
 /* Do the mmap */
 void * do_mmap (void *addr, size_t length, int writable, struct file *file, off_t offset) {
 
-	
-	uint32_t read_bytes = offset + length;
-	uint32_t zero_bytes = (ROUND_UP (offset + length, PGSIZE) - read_bytes); // file_length(file)
+	uint32_t read_bytes = file_length(file) < length ? file_length(file) : length;
+	uint32_t zero_bytes = PGSIZE - (read_bytes % PGSIZE); // file_length(file)
 	uint64_t upage = ((uint64_t)addr) & ~PGMASK;
+	struct file *opened_file = file_reopen(file);
+
+	if (opened_file == NULL)
+		return NULL;
 
 	while (read_bytes > 0 || zero_bytes > 0) {
 		/* Do calculate how to fill this page.
@@ -68,12 +72,13 @@ void * do_mmap (void *addr, size_t length, int writable, struct file *file, off_
 		/* TODO: Set up aux to pass information to the lazy_load_segment. */
 		// void *aux = NULL;
 		struct container *container = (struct container *)malloc(sizeof(struct container));
-		container->file = file;
+		container->file = opened_file;
 		container->page_read_bytes = page_read_bytes;
 		container->offset = offset;
 
 		if (!vm_alloc_page_with_initializer (VM_FILE, upage, writable, lazy_load_segment, container)) {
-			return false;
+			file_close(opened_file);
+			return NULL;
 		}
 
 		/* Advance. */
@@ -83,10 +88,32 @@ void * do_mmap (void *addr, size_t length, int writable, struct file *file, off_
 		offset += page_read_bytes;
 		/* ------------------------------------------ */
 	}
-	return true;	
+	return addr;	
 }
 
 /* Do the munmap */
 void
 do_munmap (void *addr) {
+	//struct file *temp_file = (struct file *)addr;
+	struct thread *curr = thread_current();
+	//0int temp_size = file_length(temp_file);
+	 
+	while(true) {
+		struct page *current_page = spt_find_page(&curr->spt, addr);
+		if (current_page == NULL)
+			return;
+		if(pml4_is_dirty(curr->pml4, current_page->va)){
+			struct container *temp_con = (struct container *)current_page->uninit.aux;
+			
+			if(temp_con->page_read_bytes == file_write_at(temp_con->file,current_page->va,temp_con->page_read_bytes , temp_con->offset))
+				pml4_set_dirty(curr->pml4, current_page->va, 0);
+		}
+		spt_remove_page(&curr->spt, current_page);
+		//pml4_clear_page(curr->pml4, current_page->va);
+		current_page->frame = NULL;
+		
+
+		//length -=PGSIZE;
+		addr += PGSIZE;
+	}
 }

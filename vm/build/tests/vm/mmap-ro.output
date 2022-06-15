@@ -17,15 +17,17 @@ Executing 'mmap-ro':
 (mmap-ro) begin
 (mmap-ro) open "large.txt"
 (mmap-ro) mmap "large.txt" with writable=0
+(mmap-ro) about to write into read-only mmap'd memory
+Page fault at 0x10000000: rights violation error writing page in user context.
 mmap-ro: exit(-1)
 Execution of 'mmap-ro' complete.
-Timer: 150 ticks
-Thread: 30 idle ticks, 117 kernel ticks, 3 user ticks
+Timer: 153 ticks
+Thread: 30 idle ticks, 120 kernel ticks, 4 user ticks
 hd0:0: 0 reads, 0 writes
-hd0:1: 111 reads, 8074 writes
+hd0:1: 119 reads, 8074 writes
 hd1:0: 4018 reads, 0 writes
 hd1:1: 0 reads, 0 writes
-Console: 1052 characters output
+Console: 1185 characters output
 Keyboard: 0 keys pressed
-Exception: 0 page faults
+Exception: 1 page faults
 Powering off...

@@ -11,5 +11,6 @@ Differences in `diff -u' format:
   (swap-file) open "large.txt"
   (swap-file) mmap "large.txt"
 - (swap-file) end
++ Page fault at 0x10: not present error writing page in kernel context.
 
 (Process exit codes are excluded for matching purposes.)

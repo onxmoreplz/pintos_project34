@@ -15,6 +15,14 @@
         "malloc.h": "c",
         "intrinsic.h": "c",
         "palloc.h": "c",
-        "vaddr.h": "c"
+        "vaddr.h": "c",
+        "*.tcc": "c",
+        "fstream": "c",
+        "iosfwd": "c",
+        "istream": "c",
+        "limits": "c",
+        "sstream": "c",
+        "streambuf": "c",
+        "syn-write.h": "c"
     }
 }

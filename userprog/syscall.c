@@ -37,6 +37,8 @@ void seek(int fd, unsigned position);
 unsigned tell(int fd);
 void close(int fd);
 void check_valid_buffer(void *buffer, unsigned size, void *rsp, bool to_write);
+void *mmap(void *addr, size_t length, int writable, int fd, off_t offset);
+void munmap(void *addr);
 /* ------------------------------- */
 
 /* System call.
@@ -128,9 +130,10 @@ void syscall_handler(struct intr_frame *f UNUSED)
 		close(f->R.rdi);
 		break;
 	case SYS_MMAP:
-		mmap(f->R.rdi, f->R.rsi, f->R.rdx, f->R.r10, f->R.r8);
+		f->R.rax = mmap(f->R.rdi, f->R.rsi, f->R.rdx, f->R.r10, f->R.r8);
 		break;
 	case SYS_MUNMAP:
+		munmap(f->R.rdi);
 		break;
 	default:
 		exit(-1);
@@ -318,7 +321,6 @@ int read(int fd, void *buffer, unsigned size)
 	}
 
 	lock_release(&filesys_lock);
-
 	return ret;
 }
 
@@ -402,42 +404,36 @@ void close(int fd)
 	file_close(file_obj);
 }
 
-void mmap(void *addr, size_t length, int writable, int fd, off_t offset)
+void *mmap(void *addr, size_t length, int writable, int fd, off_t offset)
 {	
-	check_address(addr);
-	struct file *open_file = get_file_from_fd_table(fd);
-
-	if (open_file == NULL || open_file == 0 || length == 0)
-	{
+	if (is_kernel_vaddr(addr) || pg_round_down(addr) != addr) {
+		return NULL;
+	}
+	if (fd == 0 || fd == 1) {
 		exit(-1);
 	}
-	
-	do_mmap();
+	struct file *open_file = get_file_from_fd_table(fd);
 
-	// lock_acquire(&filesys_lock);
+	if (spt_find_page(&thread_current()->spt, addr) != NULL) {
+		return NULL;
+	}
 
-	// if (file == NULL)
-	// {
-	// 	lock_release(&filesys_lock);
-	// 	return -1;
-	// }
-	// struct file *open_file = filesys_open(file);
+	if (open_file == NULL || open_file == 0 || length <= 0)
+	{
+		return NULL;
+	}
+	if (offset % PGSIZE != 0) {
+		return NULL;
+	}
+	return do_mmap(addr,length,writable,open_file,offset);
 
-	// if (open_file == NULL)
-	// {
-	// 	lock_release(&filesys_lock);
-	// 	return -1;
-	// }
+}
 
-	// int fd = add_file_to_fdt(open_file);
-
-	// if (fd == -1) // fd_table 이 다 찬 경우
-	// {
-	// 	file_close(open_file);
-	// }
-
-	// lock_release(&filesys_lock);
-	// return fd;
+void munmap(void *addr) {
+	if (is_kernel_vaddr(addr)||addr==NULL){
+		return;
+	}
+	do_munmap(addr);
 }
 
 

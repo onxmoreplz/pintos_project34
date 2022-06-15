@@ -21,8 +21,8 @@ Executing 'swap-iter':
 Page fault at 0x10: not present error writing page in kernel context.
 swap-iter: exit(-1)
 Execution of 'swap-iter' complete.
-Timer: 326 ticks
-Thread: 30 idle ticks, 228 kernel ticks, 69 user ticks
+Timer: 374 ticks
+Thread: 81 idle ticks, 231 kernel ticks, 63 user ticks
 hd0:0: 0 reads, 0 writes
 hd0:1: 116 reads, 15902 writes
 hd1:0: 7932 reads, 0 writes

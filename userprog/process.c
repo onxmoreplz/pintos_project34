@@ -744,14 +744,14 @@ lazy_load_segment (struct page *page, void *aux) {
 	off_t offsetof = ((struct container *)aux)->offset;
 	size_t page_read_bytes = ((struct container *)aux)->page_read_bytes;
 	size_t page_zero_bytes = PGSIZE - page_read_bytes;
-
+	
 	file_seek(file, offsetof);
 
 	if (file_read(file, page->frame->kva, page_read_bytes) != (int)page_read_bytes) {
 		palloc_free_page(page->frame->kva);
 		return false;
 	}
-
+	
 	memset(page->frame->kva + page_read_bytes, 0, page_zero_bytes);
 
 	return true;

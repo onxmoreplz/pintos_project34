@@ -20,8 +20,8 @@ Executing 'swap-anon':
 Page fault at 0x10: not present error writing page in kernel context.
 swap-anon: exit(-1)
 Execution of 'swap-anon' complete.
-Timer: 125 ticks
-Thread: 30 idle ticks, 35 kernel ticks, 60 user ticks
+Timer: 126 ticks
+Thread: 30 idle ticks, 36 kernel ticks, 60 user ticks
 hd0:0: 0 reads, 0 writes
 hd0:1: 80 reads, 236 writes
 hd1:0: 104 reads, 0 writes
