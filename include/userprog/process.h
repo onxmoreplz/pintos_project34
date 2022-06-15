@@ -10,6 +10,8 @@ int process_wait (tid_t);
 void process_exit (void);
 void process_activate (struct thread *next);
 
+bool lazy_load_segment (struct page *page, void *aux);
+
 /* --------------- Project 3 ---------------- */
 // static bool install_page (void *upage, void *kpage, bool writable);
 // bool lazy_load_segment (struct page *page, void *aux);

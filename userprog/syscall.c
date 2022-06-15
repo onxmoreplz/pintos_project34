@@ -127,6 +127,11 @@ void syscall_handler(struct intr_frame *f UNUSED)
 	case SYS_CLOSE:
 		close(f->R.rdi);
 		break;
+	case SYS_MMAP:
+		mmap(f->R.rdi, f->R.rsi, f->R.rdx, f->R.r10, f->R.r8);
+		break;
+	case SYS_MUNMAP:
+		break;
 	default:
 		exit(-1);
 		break;
@@ -396,6 +401,45 @@ void close(int fd)
 
 	file_close(file_obj);
 }
+
+void mmap(void *addr, size_t length, int writable, int fd, off_t offset)
+{	
+	check_address(addr);
+	struct file *open_file = get_file_from_fd_table(fd);
+
+	if (open_file == NULL || open_file == 0 || length == 0)
+	{
+		exit(-1);
+	}
+	
+	do_mmap();
+
+	// lock_acquire(&filesys_lock);
+
+	// if (file == NULL)
+	// {
+	// 	lock_release(&filesys_lock);
+	// 	return -1;
+	// }
+	// struct file *open_file = filesys_open(file);
+
+	// if (open_file == NULL)
+	// {
+	// 	lock_release(&filesys_lock);
+	// 	return -1;
+	// }
+
+	// int fd = add_file_to_fdt(open_file);
+
+	// if (fd == -1) // fd_table 이 다 찬 경우
+	// {
+	// 	file_close(open_file);
+	// }
+
+	// lock_release(&filesys_lock);
+	// return fd;
+}
+
 
 /* 인자로 받은 user_addr이 유저 가상 주소인지 확인하고, 유저 가상 주소라면 user_addr를 포함하는 Page를 SPT에서 찾는다.*/
 void check_address(void *user_addr)
