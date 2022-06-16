@@ -117,7 +117,7 @@ void syscall_handler(struct intr_frame *f UNUSED)
 		f->R.rax = read(f->R.rdi, f->R.rsi, f->R.rdx);
 		break;
 	case SYS_WRITE:
-		check_valid_buffer(f->R.rsi, f->R.rdx, f->rsp, 1);
+		check_valid_buffer(f->R.rsi, f->R.rdx, f->rsp, 0);
 		f->R.rax = write(f->R.rdi, f->R.rsi, f->R.rdx);
 		break;
 	case SYS_SEEK:
@@ -326,15 +326,14 @@ int read(int fd, void *buffer, unsigned size)
 
 int write(int fd, const void *buffer, unsigned size)
 {
-	check_address(buffer);
-	lock_acquire(&filesys_lock);
+	// check_address(buffer);
+	// lock_acquire(&filesys_lock);
 
 	int ret;
 	struct file *file_obj = get_file_from_fd_table(fd);
 
 	if (file_obj == NULL)
 	{
-		lock_release(&filesys_lock);
 		return -1;
 	}
 
@@ -352,10 +351,10 @@ int write(int fd, const void *buffer, unsigned size)
 	/* FILE */
 	else
 	{
+		lock_acquire(&filesys_lock);
 		ret = file_write(file_obj, buffer, size);
+		lock_release(&filesys_lock);
 	}
-
-	lock_release(&filesys_lock);
 
 	return ret;
 }
@@ -404,34 +403,36 @@ void close(int fd)
 	file_close(file_obj);
 }
 
-void *mmap(void *addr, size_t length, int writable, int fd, off_t offset)
-{	
-	
-	if (is_kernel_vaddr(addr) || pg_round_down(addr) != addr) {
-		return NULL;
-	}
-	if (fd == 0 || fd == 1) {
-		exit(-1);
-	}
-	struct file *open_file = get_file_from_fd_table(fd);
-
-	if (spt_find_page(&thread_current()->spt, addr) != NULL) {
-		return NULL;
-	}
-
-	if (open_file == NULL || open_file == 0 || (long)length <= 0)
-	{
-		return NULL;
-	}
+void *mmap (void *addr, size_t length, int writable, int fd, off_t offset) {
 	if (offset % PGSIZE != 0) {
 		return NULL;
-	}
-	return do_mmap(addr,length,writable,open_file,offset);
+	}	
 
+	if (pg_round_down(addr) != addr || is_kernel_vaddr(addr) || addr == NULL || (long long)length <= 0) {
+		return NULL;
+	}
+
+	/* console input & output */
+	if (fd == 0 || fd == 1) {	
+		exit(-1);
+	}
+
+	if (spt_find_page(&thread_current()->spt, addr)) {
+		return NULL;
+	}
+
+	struct file *target = get_file_from_fd_table(fd);
+
+	if (target == NULL) {
+		return NULL;
+	}
+
+	return do_mmap(addr, length, writable, target, offset);
 }
 
 void munmap(void *addr) {
 	// if (is_kernel_vaddr(addr)||addr==NULL){
+	// 	printf('here\n\n');
 	// 	return;
 	// }
 	do_munmap(addr);

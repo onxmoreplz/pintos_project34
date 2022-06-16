@@ -53,10 +53,10 @@ file_backed_destroy (struct page *page) {
 /* Do the mmap */
 void * do_mmap (void *addr, size_t length, int writable, struct file *file, off_t offset) {
 
+	struct file *opened_file = file_reopen(file);
 	uint32_t read_bytes = file_length(file) < length ? file_length(file) : length;
 	uint32_t zero_bytes = PGSIZE - (read_bytes % PGSIZE); // file_length(file)
-	uint64_t upage = ((uint64_t)addr) & ~PGMASK;
-	struct file *opened_file = file_reopen(file);
+	void *return_addr = addr;
 
 	if (opened_file == NULL)
 		return NULL;
@@ -76,19 +76,19 @@ void * do_mmap (void *addr, size_t length, int writable, struct file *file, off_
 		container->page_read_bytes = page_read_bytes;
 		container->offset = offset;
 
-		if (!vm_alloc_page_with_initializer (VM_FILE, upage, writable, lazy_load_segment, container)) {
-			file_close(opened_file);
+		if (!vm_alloc_page_with_initializer (VM_FILE, addr, writable, lazy_load_segment, container)) {
+			// file_close(opened_file);
 			return NULL;
 		}
 
 		/* Advance. */
 		read_bytes -= page_read_bytes;
 		zero_bytes -= page_zero_bytes;
-		upage += PGSIZE;
+		addr += PGSIZE;
 		offset += page_read_bytes;
 		/* ------------------------------------------ */
 	}
-	return addr;	
+	return return_addr;	
 }
 
 /* Do the munmap */
@@ -102,15 +102,15 @@ do_munmap (void *addr) {
 		struct page *current_page = spt_find_page(&curr->spt, addr);
 		if (current_page == NULL)
 			return;
+
+		struct container *temp_con = (struct container *)current_page->uninit.aux;
 		if(pml4_is_dirty(curr->pml4, current_page->va)){
-			struct container *temp_con = (struct container *)current_page->uninit.aux;
-			
-			file_write_at(temp_con->file,addr,temp_con->page_read_bytes , temp_con->offset);
+			file_write_at(temp_con->file, addr,temp_con->page_read_bytes , temp_con->offset);
 			pml4_set_dirty(curr->pml4, current_page->va, 0);
 		}
-		hash_delete(&(curr->spt.spt_hash), &(current_page->hash_elem));
-		spt_remove_page(&curr->spt, current_page);
-		// pml4_clear_page(curr->pml4, current_page->va);
+		// hash_delete(&(curr->spt.spt_hash), &(current_page->hash_elem));
+		// spt_remove_page(&curr->spt, current_page);
+		pml4_clear_page(curr->pml4, current_page->va);
 		// current_page->frame = NULL;
 		
 

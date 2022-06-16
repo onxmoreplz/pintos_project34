@@ -6,7 +6,7 @@ enum vm_type;
 
 struct anon_page {
     /* --------------- Project 3 --------------- */
-    int swap_sec;
+    int swap_index;
     /* ----------------------------------------- */
 };
 

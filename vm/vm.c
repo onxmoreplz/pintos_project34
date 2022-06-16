@@ -235,7 +235,6 @@ vm_try_handle_fault (struct intr_frame *f UNUSED, void *addr UNUSED, bool user U
 				return true;
 			}
 			return false;
-			PANIC("to do!");
 		}
 		else {
 			return true;
@@ -392,6 +391,21 @@ void
 supplemental_page_table_kill (struct supplemental_page_table *spt UNUSED) {
 	/* TODO: Destroy all the supplemental_page_table hold by thread and
 	 * TODO: writeback all the modified contents to the storage. */
+	struct hash_iterator i;
+	if (spt->spt_hash.buckets != NULL)
+	{
+		hash_first(&i, &spt->spt_hash);
+
+		while(hash_next(&i))
+		{
+			struct page *page = hash_entry(hash_cur(&i), struct page, hash_elem);
+
+			if (page->operations->type == VM_FILE)
+			{
+				do_munmap(page->va);
+			}
+		}
+	}
 
 	hash_destroy(&spt->spt_hash, page_destory);
 }
