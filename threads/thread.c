@@ -244,7 +244,10 @@ tid_t thread_create(const char *name, int priority,
 	thread_unblock(t); // 지금 만든 자식 스레드 ready_list 에 넣음
 	if (preempt_by_priority())
 	{
-		thread_yield();
+		if (!intr_context())
+		{
+			thread_yield();
+		}
 	}
 
 	return tid;

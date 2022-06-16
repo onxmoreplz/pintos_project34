@@ -6,7 +6,7 @@ enum vm_type;
 
 struct anon_page {
     /* --------------- Project 3 --------------- */
-    int swap_index;
+    int swap_index; // Swap된 데이터들이 저장된 섹터 구역을 의미
     /* ----------------------------------------- */
 };
 

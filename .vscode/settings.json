@@ -23,6 +23,7 @@
         "limits": "c",
         "sstream": "c",
         "streambuf": "c",
-        "syn-write.h": "c"
+        "syn-write.h": "c",
+        "string.h": "c"
     }
 }

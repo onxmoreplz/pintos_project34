@@ -444,7 +444,9 @@ load (const char *file_name, struct intr_frame *if_) {
 	process_activate (thread_current ());
 
 	/* Open executable file. */
+	lock_acquire(&filesys_lock);
 	file = filesys_open (file_name);
+	lock_release(&filesys_lock);
 	if (file == NULL) {
 		printf ("load: %s: open failed\n", file_name);
 		goto done;
@@ -454,6 +456,7 @@ load (const char *file_name, struct intr_frame *if_) {
 	t->running = file;
 	
 	/* Read and verify executable header. */
+	lock_acquire(&filesys_lock);
 	if (file_read (file, &ehdr, sizeof ehdr) != sizeof ehdr
 			|| memcmp (ehdr.e_ident, "\177ELF\2\1\1", 7)
 			|| ehdr.e_type != 2
@@ -462,8 +465,11 @@ load (const char *file_name, struct intr_frame *if_) {
 			|| ehdr.e_phentsize != sizeof (struct Phdr)
 			|| ehdr.e_phnum > 1024) {
 		printf ("load: %s: error loading executable\n", file_name);
+		lock_release(&filesys_lock);
 		goto done;
 	}
+	lock_release(&filesys_lock);
+	
 
 	/* Read program headers. */
 	file_ofs = ehdr.e_phoff;

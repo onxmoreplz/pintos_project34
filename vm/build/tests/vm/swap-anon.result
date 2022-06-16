@@ -1,51 +1,18 @@
 FAIL
-Test output failed to match any acceptable form.
-
-Acceptable output:
-  (swap-anon) begin
-  (swap-anon) write sparsely over page 0
-  (swap-anon) write sparsely over page 512
-  (swap-anon) write sparsely over page 1024
-  (swap-anon) write sparsely over page 1536
-  (swap-anon) write sparsely over page 2048
-  (swap-anon) write sparsely over page 2560
-  (swap-anon) write sparsely over page 3072
-  (swap-anon) write sparsely over page 3584
-  (swap-anon) write sparsely over page 4096
-  (swap-anon) write sparsely over page 4608
-  (swap-anon) check consistency in page 0
-  (swap-anon) check consistency in page 512
-  (swap-anon) check consistency in page 1024
-  (swap-anon) check consistency in page 1536
-  (swap-anon) check consistency in page 2048
-  (swap-anon) check consistency in page 2560
-  (swap-anon) check consistency in page 3072
-  (swap-anon) check consistency in page 3584
-  (swap-anon) check consistency in page 4096
-  (swap-anon) check consistency in page 4608
-  (swap-anon) end
-Differences in `diff -u' format:
-  (swap-anon) begin
-  (swap-anon) write sparsely over page 0
-  (swap-anon) write sparsely over page 512
-  (swap-anon) write sparsely over page 1024
-- (swap-anon) write sparsely over page 1536
-- (swap-anon) write sparsely over page 2048
-- (swap-anon) write sparsely over page 2560
-- (swap-anon) write sparsely over page 3072
-- (swap-anon) write sparsely over page 3584
-- (swap-anon) write sparsely over page 4096
-- (swap-anon) write sparsely over page 4608
-- (swap-anon) check consistency in page 0
-- (swap-anon) check consistency in page 512
-- (swap-anon) check consistency in page 1024
-- (swap-anon) check consistency in page 1536
-- (swap-anon) check consistency in page 2048
-- (swap-anon) check consistency in page 2560
-- (swap-anon) check consistency in page 3072
-- (swap-anon) check consistency in page 3584
-- (swap-anon) check consistency in page 4096
-- (swap-anon) check consistency in page 4608
-- (swap-anon) end
-
-(Process exit codes are excluded for matching purposes.)
+Kernel panic in run: PANIC at ../../threads/palloc.c:321 in palloc_free_multiple(): assertion `bitmap_all (pool->used_map, page_idx, page_cnt)' failed.
+Call stack: 0x80042180c0 0x800420ba42 0x800420ba8f 0x800420cdbe 0x800420ce41 0x800420cec4 0x800420cf8d 0x800421bd9b 0x800421bcec 0x80042071e1 0x800421d509 0x800421ce93 0x8004208f91 0x80042093af
+Translation of call stack:
+0x00000080042180c0: debug_panic (lib/kernel/debug.c:32)
+0x000000800420ba42: palloc_free_multiple (threads/palloc.c:322)
+0x000000800420ba8f: palloc_free_page (threads/palloc.c:329)
+0x000000800420cdbe: pt_destroy (threads/mmu.c:160 (discriminator 2))
+0x000000800420ce41: pgdir_destroy (threads/mmu.c:170 (discriminator 2))
+0x000000800420cec4: pdpe_destroy (threads/mmu.c:180 (discriminator 2))
+0x000000800420cf8d: pml4_destroy (threads/mmu.c:199)
+0x000000800421bd9b: process_cleanup (userprog/process.c:342)
+0x000000800421bcec: process_exit (userprog/process.c:312)
+0x00000080042071e1: thread_exit (threads/thread.c:337)
+0x000000800421d509: fork (userprog/syscall.c:210)
+0x000000800421ce93: page_fault (userprog/exception.c:148)
+0x0000008004208f91: intr_handler (threads/interrupt.c:352)
+0x00000080042093af: intr_entry (threads/intr-stubs.o:?)

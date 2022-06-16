@@ -72,6 +72,7 @@ void syscall_init(void)
 	/* ---------- Project 2 ---------- */
 	lock_init(&filesys_lock); 
 	/* ------------------------------- */
+	lock_init(&victim_lock);
 }
 
 /* The main system call interface */

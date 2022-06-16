@@ -8,10 +8,14 @@
 #include <hash.h>
 #include "threads/vaddr.h"
 #include "userprog/process.h"
+#include "threads/mmu.h"
+#include "../include/userprog/syscall.h"
 /* ----------------------------------------- */
 
 /* Initializes the virtual memory subsystem by invoking each subsystem's
  * intialize codes. */
+struct list_elem* start;
+
 void
 vm_init (void) {
 	vm_anon_init ();
@@ -24,7 +28,7 @@ vm_init (void) {
 	/* TODO: Your code goes here. */
 	/* --------------- Project 3 ---------------- */
 	list_init(&frame_table);
-	// start = list_begin(&frame_table);
+	start = list_begin(&frame_table);
 	/* ------------------------------------------ */
 
 }
@@ -146,14 +150,50 @@ spt_remove_page (struct supplemental_page_table *spt, struct page *page) {
 /* Get the struct frame, that will be evicted. */
 static struct frame *
 vm_get_victim (void) {
+	lock_acquire(&victim_lock);
 	struct frame *victim = NULL;
 	 /* TODO: The policy for eviction is up to you. */
 
 	/* ---------------- Project 3 ----------------*/
-	// struct thread *cur = thread_current();
-	// struct list_elem *e = list_begin(&frame_table);
+	struct thread *curr = thread_current();
+	struct list_elem *e = list_begin(&frame_table);
+	
 
-	victim = list_entry(list_pop_front (&frame_table), struct frame, frame_elem);
+	for (e; e != list_end(&frame_table);e = list_next(e))
+	{
+		struct frame *temp_frame = list_entry(e, struct frame, frame_elem); 
+		if (pml4_is_accessed(curr->pml4, temp_frame->page))
+		{
+			pml4_set_accessed(curr->pml4, temp_frame->page, 0);
+		}
+		else
+		{
+			victim = list_entry(e, struct frame, frame_elem);
+			list_remove(e);
+			break;
+		}		
+	}
+
+	if (victim == NULL)
+	{
+		e = list_begin(&frame_table);
+
+		for (e; e != list_end(&frame_table);e = list_next(e))
+		{
+			struct frame *temp_frame = list_entry(e, struct frame, frame_elem); 
+			if (pml4_is_accessed(curr->pml4, temp_frame->page))
+			{
+				pml4_set_accessed(curr->pml4, temp_frame->page, 0);
+			}
+			else
+			{
+				victim = list_entry(e, struct frame, frame_elem);
+				list_remove(e);
+				break;
+			}		
+		}
+	}
+	lock_release(&victim_lock);
 
 	/* -------------------------------------------*/
 	return victim;
@@ -170,13 +210,14 @@ vm_evict_frame (void) {
 	swap_out(victim->page);
 	/* -------------------------------------------*/
 
-	return NULL;
+	return victim;
 }
 
 /* palloc() and get frame. If there is no available page, evict the page
  * and return it. This always return valid address. That is, if the user pool
  * memory is full, this function evicts the frame to get the available memory
  * space.*/
+/* Page를 Claim할 때 Page에 해당하는 물리 프레임 가져옴 */
 static struct frame *
 vm_get_frame (void) {
 	/* ---------------- Project 3 ----------------*/
@@ -184,12 +225,14 @@ vm_get_frame (void) {
 	struct frame *frame = NULL;
 	void *kva = palloc_get_page(PAL_USER); // User Pool에서 커널 가상 주소 공간으로 1page 할당
 	if (kva == NULL) {
-		// frame = vm_evict_frame();
+		frame = vm_evict_frame();
+		frame->page = NULL;
+
+		return frame;
 	}
-	else {
-		frame = malloc(sizeof(struct frame));
-		frame->kva = kva;
-	}
+
+	frame = malloc(sizeof(struct frame));
+	frame->kva = kva;
 
 	list_push_back (&frame_table, &frame->frame_elem);
 	frame->page = NULL;
@@ -284,6 +327,7 @@ static bool vm_do_claim_page (struct page *page) {
 	
 	/* --------------- Project 3 --------------- */
 	if (install_page(page->va, frame->kva, page->writable)) {
+		list_push_back(&frame_table, &frame->frame_elem);
 		return swap_in(page, frame->kva);
 	}
 
