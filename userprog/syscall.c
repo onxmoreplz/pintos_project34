@@ -406,6 +406,7 @@ void close(int fd)
 
 void *mmap(void *addr, size_t length, int writable, int fd, off_t offset)
 {	
+	
 	if (is_kernel_vaddr(addr) || pg_round_down(addr) != addr) {
 		return NULL;
 	}
@@ -418,7 +419,7 @@ void *mmap(void *addr, size_t length, int writable, int fd, off_t offset)
 		return NULL;
 	}
 
-	if (open_file == NULL || open_file == 0 || length <= 0)
+	if (open_file == NULL || open_file == 0 || (long)length <= 0)
 	{
 		return NULL;
 	}
@@ -430,9 +431,9 @@ void *mmap(void *addr, size_t length, int writable, int fd, off_t offset)
 }
 
 void munmap(void *addr) {
-	if (is_kernel_vaddr(addr)||addr==NULL){
-		return;
-	}
+	// if (is_kernel_vaddr(addr)||addr==NULL){
+	// 	return;
+	// }
 	do_munmap(addr);
 }
 

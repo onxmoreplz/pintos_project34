@@ -97,7 +97,7 @@ do_munmap (void *addr) {
 	//struct file *temp_file = (struct file *)addr;
 	struct thread *curr = thread_current();
 	//0int temp_size = file_length(temp_file);
-	 
+	
 	while(true) {
 		struct page *current_page = spt_find_page(&curr->spt, addr);
 		if (current_page == NULL)
@@ -105,12 +105,13 @@ do_munmap (void *addr) {
 		if(pml4_is_dirty(curr->pml4, current_page->va)){
 			struct container *temp_con = (struct container *)current_page->uninit.aux;
 			
-			if(temp_con->page_read_bytes == file_write_at(temp_con->file,current_page->va,temp_con->page_read_bytes , temp_con->offset))
-				pml4_set_dirty(curr->pml4, current_page->va, 0);
+			file_write_at(temp_con->file,addr,temp_con->page_read_bytes , temp_con->offset);
+			pml4_set_dirty(curr->pml4, current_page->va, 0);
 		}
+		hash_delete(&(curr->spt.spt_hash), &(current_page->hash_elem));
 		spt_remove_page(&curr->spt, current_page);
-		//pml4_clear_page(curr->pml4, current_page->va);
-		current_page->frame = NULL;
+		// pml4_clear_page(curr->pml4, current_page->va);
+		// current_page->frame = NULL;
 		
 
 		//length -=PGSIZE;
