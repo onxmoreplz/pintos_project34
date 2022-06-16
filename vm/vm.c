@@ -209,7 +209,7 @@ vm_evict_frame (void) {
 	/* ---------------- Project 3 ----------------*/
 	swap_out(victim->page);
 	/* -------------------------------------------*/
-
+	
 	return victim;
 }
 
@@ -234,7 +234,7 @@ vm_get_frame (void) {
 	frame = malloc(sizeof(struct frame));
 	frame->kva = kva;
 
-	list_push_back (&frame_table, &frame->frame_elem);
+	// list_push_back (&frame_table, &frame->frame_elem);
 	frame->page = NULL;
 
 	ASSERT (frame != NULL);
@@ -269,7 +269,7 @@ vm_try_handle_fault (struct intr_frame *f UNUSED, void *addr UNUSED, bool user U
 	if (is_kernel_vaddr(addr)) {	/* first checks if it is a valid page fault */
 		return false;
 	}
-
+	
 	void *rsp_stack = is_kernel_vaddr(f->rsp) ? thread_current()->rsp_stack : f->rsp;
 	if (not_present) {
 		if (!vm_claim_page(addr)) {
@@ -283,7 +283,7 @@ vm_try_handle_fault (struct intr_frame *f UNUSED, void *addr UNUSED, bool user U
 			return true;
 		}
 	} 
-
+	
 	return false;
 	// return vm_do_claim_page (page);
 	/* ------------------------------------------ */
@@ -307,7 +307,7 @@ bool vm_claim_page (void *va UNUSED) {
 	if (page == NULL){
 		return false;
 	}
-
+	
 	return vm_do_claim_page (page);
 }
 
@@ -330,7 +330,7 @@ static bool vm_do_claim_page (struct page *page) {
 		list_push_back(&frame_table, &frame->frame_elem);
 		return swap_in(page, frame->kva);
 	}
-
+	
 	return false;
 	/* ----------------------------------------- */
 }

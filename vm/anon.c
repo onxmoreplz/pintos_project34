@@ -88,7 +88,7 @@ static bool anon_swap_out (struct page *page) {
 		disk_write(swap_disk, empty_slot_idx * SECTORS_PER_PAGE + i, page->va + DISK_SECTOR_SIZE * i);
 	}
 	bitmap_set(swap_table, empty_slot_idx, true);
-	pml4_clear_page(&thread_current()->pml4, page->va);
+	pml4_clear_page(thread_current()->pml4, page->va);
 
 	anon_page->swap_index = empty_slot_idx;
 	return true;
