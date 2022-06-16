@@ -8,6 +8,7 @@
 
 /* DO NOT MODIFY BELOW LINE */
 static struct disk *swap_disk;
+
 static bool anon_swap_in (struct page *page, void *kva);
 static bool anon_swap_out (struct page *page);
 static void anon_destroy (struct page *page);
@@ -25,6 +26,7 @@ struct bitmap *swap_table;
 const size_t SECTORS_PER_PAGE = PGSIZE / DISK_SECTOR_SIZE;
 
 /* Initialize the data for anonymous pages */
+/* ANON 페이지를 위한 디스크 내 스왑 영역을 생성해주는 함수 */
 void
 vm_anon_init (void) {
 	/* TODO: Set up the swap_disk. */
